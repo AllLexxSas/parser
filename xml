@@ -1,0 +1,325 @@
+Your XML document contains no xml-stylesheet processing instruction. To provide an XSLT transform, add the following to the top of your file and edit the href attribute accordingly: <?xml-stylesheet type="text/xsl" href="stylesheet.xsl" ?>
+
+You can also enter the XSLT file name using the above "XSLT Location:" text box, but this will not persist with your XML document. 
+
+You can specify a default output file name using the following in your XML documents: <?xsl-output default="xslt_output" ?>
+
+<Method xsi:noNamespaceSchemaLocation="D:\Siemens\MachineConfigurator\resource\mc_method.xsd" >
+ <Name>GMe_GoToReferencePosition</Name>
+ <Param>nGCode</Param>
+ <Param>P</Param>
+ <Param>X</Param>
+ <Param>Y</Param>
+ <Param>Z</Param>
+ <Param>A</Param>
+ <Param>B</Param>
+ <Param>C</Param>
+ <Param>U</Param>
+ <Param>V</Param>
+ <Param>W</Param>
+ <Variable>LV_bRelative1</Variable>
+ <Variable>LV_bRelative2</Variable>
+ <Variable>LV_nOffsetBase</Variable>
+<Execute>
+<MacroCommand>
+ <Name>GMe_G53</Name>
+ </MacroCommand>
+<MacroCommand>
+ <Name>GMe_SetMotionType</Name>
+ <Param>0</Param>
+ </MacroCommand>
+<IfCommand>
+ <Condition>isDefined(P)</Condition>
+<Then>
+<AssignCommand>
+ <Variable>LV_nOffsetBase</Variable>
+ <Value>1240+P-1</Value>
+ </AssignCommand>
+ </Then>
+<Else>
+<AssignCommand>
+ <Variable>LV_nOffsetBase</Variable>
+ <Value>(30==nGCode)?1241:1240</Value>
+ </AssignCommand>
+ </Else>
+ </IfCommand>
+<IfCommand>
+ <Condition>29 == nGCode</Condition>
+<Then>
+<AssignCommand>
+ <Variable>LV_bRelative1</Variable>
+ <Value>FALSE</Value>
+ </AssignCommand>
+<AssignCommand>
+ <Variable>LV_bRelative2</Variable>
+ <Value>"Relative"==getPositioningMode()</Value>
+ </AssignCommand>
+ </Then>
+<Else>
+<AssignCommand>
+ <Variable>LV_bRelative1</Variable>
+ <Value>TRUE</Value>
+ </AssignCommand>
+<AssignCommand>
+ <Variable>LV_bRelative2</Variable>
+ <Value>FALSE</Value>
+ </AssignCommand>
+ </Else>
+ </IfCommand>
+<IfCommand>
+ <Condition>doesJointExist("X") AND isDefined(X)</Condition>
+<Then>
+<MacroCommand>
+ <Name>GMe_SetJointValue</Name>
+ <Param>"X"</Param>
+ <Param>(29 == nGCode) ? getArrayElement("IntermediatePoint", getJointNumber("X")) : X</Param>
+ <Param>LV_bRelative1</Param>
+ </MacroCommand>
+<Command>
+ <Name>SetArrayElement</Name>
+ <Param>"IntermediatePoint"</Param>
+ <Param>getJointNumber("X")</Param>
+ <Param>X+(("Absolute"==getPositioningMode())?0.0:(getJointValue("X")/GVe_dFactor))</Param>
+ </Command>
+ </Then>
+ </IfCommand>
+<IfCommand>
+ <Condition>doesJointExist("Y") AND isDefined(Y)</Condition>
+<Then>
+<MacroCommand>
+ <Name>GMe_SetJointValue</Name>
+ <Param>"Y"</Param>
+ <Param>(29 == nGCode) ? getArrayElement("IntermediatePoint", getJointNumber("Y")) : Y</Param>
+ <Param>LV_bRelative1</Param>
+ </MacroCommand>
+<Command>
+ <Name>SetArrayElement</Name>
+ <Param>"IntermediatePoint"</Param>
+ <Param>getJointNumber("Y")</Param>
+ <Param>Y+(("Absolute"==getPositioningMode())?0.0:(getJointValue("Y")/GVe_dFactor))</Param>
+ </Command>
+ </Then>
+ </IfCommand>
+<IfCommand>
+ <Condition>doesJointExist("Z") AND isDefined(Z)</Condition>
+<Then>
+<MacroCommand>
+ <Name>GMe_SetJointValue</Name>
+ <Param>"Z"</Param>
+ <Param>(29 == nGCode) ? getArrayElement("IntermediatePoint", getJointNumber("Z")) : Z</Param>
+ <Param>LV_bRelative1</Param>
+ </MacroCommand>
+<Command>
+ <Name>SetArrayElement</Name>
+ <Param>"IntermediatePoint"</Param>
+ <Param>getJointNumber("Z")</Param>
+ <Param>Z+(("Absolute"==getPositioningMode())?0.0:(getJointValue("Z")/GVe_dFactor))</Param>
+ </Command>
+ </Then>
+ </IfCommand>
+<IfCommand>
+ <Condition>doesJointExist("A") AND isDefined(A)</Condition>
+<Then>
+<MacroCommand>
+ <Name>GMe_SetJointValue</Name>
+ <Param>"A"</Param>
+ <Param>(29 == nGCode) ? getArrayElement("IntermediatePoint", getJointNumber("A")) : A</Param>
+ <Param>LV_bRelative1</Param>
+ </MacroCommand>
+<Command>
+ <Name>SetArrayElement</Name>
+ <Param>"IntermediatePoint"</Param>
+ <Param>getJointNumber("A")</Param>
+ <Param>A+(("Absolute"==getPositioningMode())?0.0:getJointValue("A"))</Param>
+ </Command>
+ </Then>
+ </IfCommand>
+<IfCommand>
+ <Condition>doesJointExist("B") AND isDefined(B)</Condition>
+<Then>
+<MacroCommand>
+ <Name>GMe_SetJointValue</Name>
+ <Param>"B"</Param>
+ <Param>(29 == nGCode) ? getArrayElement("IntermediatePoint", getJointNumber("B")) : B</Param>
+ <Param>LV_bRelative1</Param>
+ </MacroCommand>
+<Command>
+ <Name>SetArrayElement</Name>
+ <Param>"IntermediatePoint"</Param>
+ <Param>getJointNumber("B")</Param>
+ <Param>B+(("Absolute"==getPositioningMode())?0.0:getJointValue("B"))</Param>
+ </Command>
+ </Then>
+ </IfCommand>
+<IfCommand>
+ <Condition>doesJointExist("C") AND isDefined(C)</Condition>
+<Then>
+<MacroCommand>
+ <Name>GMe_SetJointValue</Name>
+ <Param>"C"</Param>
+ <Param>(29 == nGCode) ? getArrayElement("IntermediatePoint", getJointNumber("C")) : C</Param>
+ <Param>LV_bRelative1</Param>
+ </MacroCommand>
+<Command>
+ <Name>SetArrayElement</Name>
+ <Param>"IntermediatePoint"</Param>
+ <Param>getJointNumber("C")</Param>
+ <Param>C+(("Absolute"==getPositioningMode())?0.0:getJointValue("C"))</Param>
+ </Command>
+ </Then>
+ </IfCommand>
+<IfCommand>
+ <Condition>doesJointExist("U") AND isDefined(U)</Condition>
+<Then>
+<MacroCommand>
+ <Name>GMe_SetJointValue</Name>
+ <Param>"U"</Param>
+ <Param>(29 == nGCode) ? getArrayElement("IntermediatePoint", getJointNumber("U")) : U</Param>
+ <Param>LV_bRelative1</Param>
+ </MacroCommand>
+<Command>
+ <Name>SetArrayElement</Name>
+ <Param>"IntermediatePoint"</Param>
+ <Param>getJointNumber("U")</Param>
+ <Param>U+(("Absolute"==getPositioningMode())?0.0:getJointValue("U"))</Param>
+ </Command>
+ </Then>
+ </IfCommand>
+<IfCommand>
+ <Condition>doesJointExist("V") AND isDefined(V)</Condition>
+<Then>
+<MacroCommand>
+ <Name>GMe_SetJointValue</Name>
+ <Param>"V"</Param>
+ <Param>(29 == nGCode) ? getArrayElement("IntermediatePoint", getJointNumber("V")) : V</Param>
+ <Param>LV_bRelative1</Param>
+ </MacroCommand>
+<Command>
+ <Name>SetArrayElement</Name>
+ <Param>"IntermediatePoint"</Param>
+ <Param>getJointNumber("V")</Param>
+ <Param>V+(("Absolute"==getPositioningMode())?0.0:getJointValue("V"))</Param>
+ </Command>
+ </Then>
+ </IfCommand>
+<IfCommand>
+ <Condition>doesJointExist("W") AND isDefined(W)</Condition>
+<Then>
+<MacroCommand>
+ <Name>GMe_SetJointValue</Name>
+ <Param>"W"</Param>
+ <Param>(29 == nGCode) ? getArrayElement("IntermediatePoint", getJointNumber("W")) : W</Param>
+ <Param>LV_bRelative1</Param>
+ </MacroCommand>
+<Command>
+ <Name>SetArrayElement</Name>
+ <Param>"IntermediatePoint"</Param>
+ <Param>getJointNumber("W")</Param>
+ <Param>W+(("Absolute"==getPositioningMode())?0.0:getJointValue("W"))</Param>
+ </Command>
+ </Then>
+ </IfCommand>
+<Command>
+ <Name>NewCoordinate</Name>
+ </Command>
+<IfCommand>
+ <Condition>doesJointExist("X") AND isDefined(X)</Condition>
+<Then>
+<MacroCommand>
+ <Name>GMe_SetJointValue</Name>
+ <Param>"X"</Param>
+ <Param>(29 == nGCode) ? X : getArrayElement("AxisData", LV_nOffsetBase, getJointNumber("X"))/GVe_dFactor</Param>
+ <Param>LV_bRelative2</Param>
+ </MacroCommand>
+ </Then>
+ </IfCommand>
+<IfCommand>
+ <Condition>doesJointExist("Y") AND isDefined(Y)</Condition>
+<Then>
+<MacroCommand>
+ <Name>GMe_SetJointValue</Name>
+ <Param>"Y"</Param>
+ <Param>(29 == nGCode) ? Y : getArrayElement("AxisData", LV_nOffsetBase, getJointNumber("Y"))/GVe_dFactor</Param>
+ <Param>LV_bRelative2</Param>
+ </MacroCommand>
+ </Then>
+ </IfCommand>
+<IfCommand>
+ <Condition>doesJointExist("Z") AND isDefined(Z)</Condition>
+<Then>
+<MacroCommand>
+ <Name>GMe_SetJointValue</Name>
+ <Param>"Z"</Param>
+ <Param>(29 == nGCode) ? Z : getArrayElement("AxisData", LV_nOffsetBase, getJointNumber("Z"))/GVe_dFactor</Param>
+ <Param>LV_bRelative2</Param>
+ </MacroCommand>
+ </Then>
+ </IfCommand>
+<IfCommand>
+ <Condition>doesJointExist("A") AND isDefined(A)</Condition>
+<Then>
+<MacroCommand>
+ <Name>GMe_SetJointValue</Name>
+ <Param>"A"</Param>
+ <Param>(29 == nGCode) ? A : getArrayElement("AxisData", LV_nOffsetBase, getJointNumber("A"))</Param>
+ <Param>LV_bRelative2</Param>
+ </MacroCommand>
+ </Then>
+ </IfCommand>
+<IfCommand>
+ <Condition>doesJointExist("B") AND isDefined(B)</Condition>
+<Then>
+<MacroCommand>
+ <Name>GMe_SetJointValue</Name>
+ <Param>"B"</Param>
+ <Param>(29 == nGCode) ? B : getArrayElement("AxisData", LV_nOffsetBase, getJointNumber("B"))</Param>
+ <Param>LV_bRelative2</Param>
+ </MacroCommand>
+ </Then>
+ </IfCommand>
+<IfCommand>
+ <Condition>doesJointExist("C") AND isDefined(C)</Condition>
+<Then>
+<MacroCommand>
+ <Name>GMe_SetJointValue</Name>
+ <Param>"C"</Param>
+ <Param>(29 == nGCode) ? C : getArrayElement("AxisData", LV_nOffsetBase, getJointNumber("C"))</Param>
+ <Param>LV_bRelative2</Param>
+ </MacroCommand>
+ </Then>
+ </IfCommand>
+<IfCommand>
+ <Condition>doesJointExist("U") AND isDefined(U)</Condition>
+<Then>
+<MacroCommand>
+ <Name>GMe_SetJointValue</Name>
+ <Param>"U"</Param>
+ <Param>(29 == nGCode) ? U : getArrayElement("AxisData", LV_nOffsetBase, getJointNumber("U"))/GVe_dFactor</Param>
+ <Param>LV_bRelative2</Param>
+ </MacroCommand>
+ </Then>
+ </IfCommand>
+<IfCommand>
+ <Condition>doesJointExist("V") AND isDefined(V)</Condition>
+<Then>
+<MacroCommand>
+ <Name>GMe_SetJointValue</Name>
+ <Param>"V"</Param>
+ <Param>(29 == nGCode) ? V : getArrayElement("AxisData", LV_nOffsetBase, getJointNumber("V"))/GVe_dFactor</Param>
+ <Param>LV_bRelative2</Param>
+ </MacroCommand>
+ </Then>
+ </IfCommand>
+<IfCommand>
+ <Condition>doesJointExist("W") AND isDefined(W)</Condition>
+<Then>
+<MacroCommand>
+ <Name>GMe_SetJointValue</Name>
+ <Param>"W"</Param>
+ <Param>(29 == nGCode) ? W : getArrayElement("AxisData", LV_nOffsetBase, getJointNumber("W"))/GVe_dFactor</Param>
+ <Param>LV_bRelative2</Param>
+ </MacroCommand>
+ </Then>
+ </IfCommand>
+ </Execute>
+ </Method>
