@@ -1,0 +1,256 @@
+class Matrix4:
+    def __init__(self):
+        self.mat = [[1.0, 0.0, 0.0, 0.0],
+                    [0.0, 1.0, 0.0, 0.0],
+                    [0.0, 0.0, 1.0, 0.0],
+                    [0.0, 0.0, 0.0, 1.0]]
+
+    def SetRowVec(self, index : int, vec : Vector3):
+        self.mat[index][0] = vec[0]
+        self.mat[index][1] = vec[1]
+        self.mat[index][2] = vec[2]
+
+    def GetRowVec(self, index : int) -> Vector3:
+        return Vector3(self.mat[index][0], self.mat[index][1], self.mat[index][2])
+
+    def GetColVec(self, index : int) -> Vector3:
+        return Vector3(self.mat[0][index], self.mat[1][index], self.mat[2][index])
+
+    def MultiplyVec(self, vec : Vector3) -> Vector3:
+        return Vector3(Dot(self.GetColVec(0), vec),
+                       Dot(self.GetColVec(1), vec),
+                       Dot(self.GetColVec(2), vec))
+
+    def MultiplyPt(self, pt : Vector3) -> Vector3:
+        return self.MultiplyVec(pt) + GetRowVec(3)
+
+    def __mul__(self, mat):
+        matProd = Matrix4()
+        for row in range(4):
+            for col in range(4):
+                for i in range(4):
+                    matProd.mat[row][col] += self.mat[row][i] * mat[i][col]
+        return matProd
+
+    def __imul__(self, mat):
+        matProd = self * mat
+        self.mat = matprod.mat
+        return self
+
+    def Transpose(self):
+        for i in range(1, 4):
+            for j in range(i):
+                dTmp = self.mat[i][j]
+                self.mat[i][j] = self.mat[j][i]
+                self.mat[j][i] = dTmp
+
+    def Translate(self, vec : Vector3):
+        self.mat[3][0] += vec[0]
+        self.mat[3][1] += vec[1]
+        self.mat[3][2] += vec[2]
+
+    def GetTranslation(self) -> Vector3:
+        return mat.GetRowVec(3)
+
+    def Scale(self, vec : Vector3):
+        for i in range(4):
+            self.mat[i][0] *= vec[0]
+            self.mat[i][1] *= vec[1]
+            self.mat[i][2] *= vec[2]
+
+    def GetScale(self, nAxis : int) -> float:
+        if nAxis == 0:
+            return Length(Vector3(self.mat[0][0], self.mat[0][1], self.mat[0][2]))
+        elif nAxis == 1:
+            return Length(Vector3(self.mat[1][0], self.mat[1][1], self.mat[1][2]))
+        elif nAxis == 2:
+            return Length(Vector3(self.mat[2][0], self.mat[2][1], self.mat[2][2]))
+        else:
+            return 0
+
+    def RotateX(self, val : float):
+        dCos = math.cos(val)
+        dSin = math.sin(val)
+
+        for i in range(4):
+            dTmp = self.mat[i][1] * dCos - self.mat[i][2] * dSin
+            self.mat[i][2] = self.mat[i][1] * dSin + self.mat[i][2] * dCos
+            self.mat[i][1] = dTmp
+
+    def RotateY(self, val : float):
+        dCos = math.cos(val)
+        dSin = math.sin(val)
+
+        for i in range(4):
+            dTmp = self.mat[i][0] * dCos + self.mat[i][2] * dSin
+            self.mat[i][2] = -self.mat[i][0] * dSin + self.mat[i][2] * dCos
+            self.mat[i][0] =  dTmp
+
+    def RotateZ(self, val : float):
+        dCos = math.cos(val)
+        dSin = math.sin(val)
+
+        for i in range(4):
+            dTmp = self.mat[i][0] * dCos - self.mat[i][1] * dSin
+            self.mat[i][1] = self.mat[i][0] * dSin + self.mat[i][1] * dCos
+            self.mat[i][0] = dTmp
+
+    def RotateByVec(self, vecAxis : Vector3, angle : float):
+        vecZ = Normalize(vecAxis)
+        vecX = Normalize(GetPerpVec(vecAxis))
+        vecY = Cross(vecZ, vecX)
+
+        matBack = Matrix4.CreateMatrixFromVectors(vecX, vecY, vecZ, Vector3(0.0, 0.0, 0.0))
+        matForward = Matrix4.CreateMatrixFromVectors(vecX, vecY, vecZ, Vector3(0.0, 0.0, 0.0))
+        matForward.Transpose()
+
+        self *= matForward
+        self.RotateZ(angle)
+        self *= matBack
+
+    def RotateByAngles(self, dXAngle : float, dYAngle : float, dZAngle : float, strRotType : str):
+        if strRotType == "RPY":
+            self.RotateX(dXAngle)
+            self.RotateY(dYAngle)
+            self.RotateZ(dZAngle)
+        elif strRotType == "Euler":
+            self.RotateZ(dXAngle)
+            self.RotateX(dYAngle)
+            self.RotateZ(dZAngle)
+
+    def GetRotationZYX(self, nAxis : int) -> float:
+        # Take only the non-rotational matrix parts into account
+        matTmp = Matrix4.CreateMatrixFromList(self.mat)
+        matTmp.mat[0][3] = 0.0
+        matTmp.mat[1][3] = 0.0
+        matTmp.mat[2][3] = 0.0
+        matTmp.mat[3][0] = 0.0
+        matTmp.mat[3][1] = 0.0
+        matTmp.mat[3][2] = 0.0
+        matTmp.mat[3][3] = 1.0
+
+        # Rotate the first row (i.e. the rotated x-axis) into the z-x-plane
+        vecRow = Vector3(matTmp.mat[0][0], matTmp.mat[0][1], matTmp.mat[0][2])
+        dRowLength = Length(vecRow)
+
+        dAngleZ = 0.0
+        if dRowLength >= g_dEps and vecRow[2] < g_dCosEps * dRowLength:
+            dAngleZ = math.atan2(matTmp.mat[0][1], matTmp.mat[0][0])
+
+        if nAxis == 2:
+            return dAngleZ
+
+        matTmp.RotateZ(-dAngleZ)
+
+        # Rotate the first row (i.e. the rotated x-axis) onto the x-axis
+        vecRow = Vector3(matTmp.mat[0][0], matTmp.mat[0][1], matTmp.mat[0][2])
+        dRowLength = Length(vecRow)
+
+        dAngleY = 0.0
+        if dRowLength >= g_dEps and vecRow[1] < g_dCosEps * dRowLength:
+            dAngleY = math.atan2(matTmp.mat[0][2], matTmp.mat[0][0])
+
+        if nAxis == 1:
+            return -dAngleY
+
+        matTmp.RotateY(dAngleY)
+
+        # Rotate the second row (i.e. the rotated y-axis) into the z-x-plane
+        vecRow = Vector3(matTmp.mat[1][0], matTmp.mat[1][1], matTmp.mat[1][2])
+        dRowLength = Length(vecRow)
+
+        dAngleX = 0.0
+        if dRowLength >= g_dEps and vecRow[0] < g_dCosEps * dRowLength:
+            dAngleX = math.atan2(matTmp.mat[1][2], matTmp.mat[1][1])
+
+        if nAxis == 0:
+            return dAngleX;
+
+        return 0
+
+    def Invert():
+        # Initialization
+        reduced = [False, False, False, False]
+
+        row_max = 0
+        col_max = 0
+
+        row_save = [0, 0, 0, 0]
+        col_save = [0, 0, 0, 0]
+
+        # Reduction loop
+        for i in range(4):
+            # Look for greatest element
+            abs_max = 0.0;
+
+            for row in range(4):
+                if not reduced[row]:
+                    for col in range(4):
+                        if not reduced[col]:
+                            abs_val = abs(self.mat[row][col])
+
+                            if abs_max < abs_val:
+                                abs_max = abs_val
+                                col_max = col
+                                row_max = row
+
+            reduced[col_max] = True
+
+            # If necessary: Swap rows so that the greatest element is in the diagonal
+            if col_max != row_max:
+                for col in range(4):
+                    save_elem = self.mat[row_max][col]
+                    self.mat[row_max][col] = self.mat[col_max][col]
+                    self.mat[col_max][col] = save_elem
+
+            # Store changed order
+            row_save[i] = row_max;
+            col_save[i] = col_max;
+
+            # Divide pivot row by diagonal element
+            pivot_elem = self.mat[col_max][col_max]
+            self.mat[col_max][col_max] = 1.0
+
+            for col in range(4):
+                self.mat[col_max][col] = self.mat[col_max][col] / pivot_elem
+
+            # Reduce the other rows
+            for row in range(4):
+                if row != col_max:
+                    save_elem = self.mat[row][col_max]
+                    self.mat[row][col_max] = 0.0
+
+                    for col in range(4):
+                       self.mat[row][col] -= self.mat[col_max][col] * save_elem
+
+        # Swap back
+        for index in range(4, 0, -1):
+            i = index - 1
+
+            if row_save[i] != col_save[i]:
+                row_max = row_save[i]
+                col_max = col_save[i]
+
+                for row in range(4):
+                    save_elem = self.mat[row][row_max]
+                    self.mat[row][row_max] = self.mat[row][col_max]
+                    self.mat[row][col_max] = save_elem
+
+    @staticmethod
+    def CreateMatrixFromVectors(row0 : Vector3, row1 : Vector3, row2 : Vector3, row3 : Vector3):
+        mat = Matrix4()
+        mat.SetRowVec(0, row0)
+        mat.SetRowVec(1, row1)
+        mat.SetRowVec(2, row2)
+        mat.SetRowVec(3, row3)
+        return mat
+
+    @staticmethod
+    def CreateMatrixFromList(elements : list):
+        mat = Matrix4()
+        mat.SetRowVec(0, Vector3(elements[0][0], elements[0][1], elements[0][2]))
+        mat.SetRowVec(1, Vector3(elements[1][0], elements[1][1], elements[1][2]))
+        mat.SetRowVec(2, Vector3(elements[2][0], elements[2][1], elements[2][2]))
+        mat.SetRowVec(3, Vector3(elements[3][0], elements[3][1], elements[3][2]))
+        return mat
+
